@@ -86,8 +86,8 @@ Weapons are automatically assigned based on target distance and engagement logic
 
 | Key              | Action                    |
 | ---------------- | ------------------------- |
-| `T`              | Spawn random threat       |
-| `SPACE`          | Pause / Resume simulation |
+| `SPACE`              | Spawn random threat       |
+| `P`          | Pause / Resume simulation |
 | Left Mouse Click | Select target             |
 | `ESC`            | Exit application          |
 
