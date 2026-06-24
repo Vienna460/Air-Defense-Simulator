@@ -1,20 +1,3 @@
-// =============================================================================
-//  Air Defense System — 8-Stage Kill Chain Simulation
-//  C++ / SDL2
-//
-//  Compile (Linux / macOS):
-//    g++ -std=c++17 -O2 -o air_defense air_defense.cpp -lSDL2 -lSDL2_ttf -lm
-//
-//  Install dependencies (Ubuntu/Debian):
-//    sudo apt install libsdl2-dev libsdl2-ttf-dev
-//
-//  Controls:
-//    SPACE       — spawn a new inbound threat
-//    P           — pause / resume
-//    Q / Escape  — quit
-//    Left-click  — select a threat on the radar
-// =============================================================================
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
