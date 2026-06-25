@@ -13,9 +13,7 @@
 #include <string>
 #include <vector>
 
-// =============================================================================
 // CONSTANTS
-// =============================================================================
 
 static const int WIN_W   = 960;
 static const int WIN_H   = 600;
@@ -59,9 +57,8 @@ static const char*  S_DESC[8] = {
 
 static const float PI = 3.14159265358979f;
 
-// =============================================================================
+
 // DATA TYPES
-// =============================================================================
 
 struct V2 { float x, y; };
 
@@ -106,9 +103,9 @@ struct LogEntry {
     int cls;          // 0 normal | 1 warn | 2 ok
 };
 
-// =============================================================================
+
 // GLOBALS
-// =============================================================================
+
 
 static std::vector<Threat>      g_threats;
 static std::vector<Interceptor> g_intercepts;
@@ -124,9 +121,7 @@ static int   g_kills  = 0;
 
 static std::mt19937 g_rng;
 
-// =============================================================================
 // UTILITY
-// =============================================================================
 
 static std::string nowStr() {
     time_t t = time(nullptr);
@@ -182,9 +177,8 @@ static std::string stageMsg(const Threat& th) {
     return buf;
 }
 
-// =============================================================================
+
 // SIMULATION
-// =============================================================================
 
 static void advanceStage(Threat& th) {
     if (th.dead) return;
@@ -258,7 +252,7 @@ static void update(float dt) {
 
     g_sweep += dt * 1.0f;   // 1 rad/s → one revolution every ~6.3 s
 
-    // ── Stage timers ─────────────────────────────────────────────
+    //  Stage timers 
     for (auto& th : g_threats) {
         if (th.dead || th.hit) continue;
 
@@ -275,7 +269,7 @@ static void update(float dt) {
         if (th.stTimer <= 0.f) advanceStage(th);
     }
 
-    // ── Move threats ─────────────────────────────────────────────
+    //  Move threats 
     for (auto& th : g_threats) {
         if (th.dead || th.hit || !th.visible) continue;
         float dx = RAD_CX - th.x, dy = RAD_CY - th.y;
@@ -297,7 +291,7 @@ static void update(float dt) {
         }
     }
 
-    // ── Move interceptors ────────────────────────────────────────
+    //  Move interceptors 
     for (auto& ic : g_intercepts) {
         if (ic.done) continue;
         Threat* th = findThreat(ic.targetId);
@@ -324,7 +318,7 @@ static void update(float dt) {
         if (ic.trail.size() > 26) ic.trail.erase(ic.trail.begin());
     }
 
-    // ── Assess timers (hit threats) ───────────────────────────────
+    //  Assess timers (hit threats) 
     for (auto& th : g_threats) {
         if (!th.hit || th.dead) continue;
         th.stTimer -= dt * 1000.f;
@@ -337,11 +331,11 @@ static void update(float dt) {
         }
     }
 
-    // ── Tick FX ──────────────────────────────────────────────────
+    //  Tick FX 
     for (auto& e : g_explosions) e.elapsed += dt;
     for (auto& p : g_pings)      p.elapsed += dt;
 
-    // ── Cleanup ───────────────────────────────────────────────────
+    //  Cleanup 
     auto deadNonSel = [](const Threat& t){ return t.dead && t.id != g_selId; };
     g_threats.erase(
         std::remove_if(g_threats.begin(), g_threats.end(), deadNonSel),
@@ -360,9 +354,9 @@ static void update(float dt) {
         g_pings.end());
 }
 
-// =============================================================================
+
 // RENDERING HELPERS
-// =============================================================================
+
 
 static void setColor(SDL_Renderer* r, Uint8 red, Uint8 g, Uint8 b, Uint8 a = 255) {
     SDL_SetRenderDrawColor(r, red, g, b, a);
@@ -486,20 +480,18 @@ static void drawText(SDL_Renderer* r, TTF_Font* f,
     SDL_DestroyTexture(tex);
 }
 
-// =============================================================================
 // RENDER
-// =============================================================================
 
 static void render(SDL_Renderer* r, TTF_Font* fNorm, TTF_Font* fSmall) {
     char buf[256];
 
-    // ── Background ───────────────────────────────────────────────
+    //  Background 
     setColor(r, 3, 8, 3);
     SDL_RenderClear(r);
 
-    // ═══════════════════════════════════════════════════════════════
+    
     // LEFT PANEL
-    // ═══════════════════════════════════════════════════════════════
+    
     SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
     setColor(r, 4, 12, 4, 230);
     SDL_Rect pnl = { 0, 0, PANEL_W, WIN_H };
@@ -537,7 +529,7 @@ static void render(SDL_Renderer* r, TTF_Font* fNorm, TTF_Font* fSmall) {
     snprintf(buf, sizeof(buf), "TGT-%03d", sel ? sel->id : 0);
     drawText(r, fSmall, sel ? buf : "TGT----", PX, py, 78, 194, 78); py += 16;
 
-    // ── Stage list ───────────────────────────────────────────────
+    //  Stage list 
     for (int i = 0; i < 8; i++) {
         bool isAct  = sel && sel->stage == i;
         bool isDone = sel && sel->stage >  i;
@@ -572,16 +564,16 @@ static void render(SDL_Renderer* r, TTF_Font* fNorm, TTF_Font* fSmall) {
         py += 50;
     }
 
-    // ── Controls hint ────────────────────────────────────────────
+    // Controls hint
     setColor(r, 20, 55, 20);
     SDL_RenderDrawLine(r, PX, WIN_H - 68, PANEL_W - 10, WIN_H - 68);
     drawText(r, fSmall, "SPACE: spawn threat",  PX, WIN_H - 60, 45, 95, 45);
     drawText(r, fSmall, "P: pause   Q: quit",   PX, WIN_H - 45, 45, 95, 45);
     drawText(r, fSmall, "Click radar: select",  PX, WIN_H - 30, 45, 95, 45);
 
-    // ═══════════════════════════════════════════════════════════════
+    
     // RADAR DISPLAY
-    // ═══════════════════════════════════════════════════════════════
+    
 
     // Dark radar background
     setColor(r, 1, 9, 1);
@@ -760,9 +752,9 @@ static void render(SDL_Renderer* r, TTF_Font* fNorm, TTF_Font* fSmall) {
     drawText(r, fSmall, g_paused ? "HOLD" : "LIVE",
              RAD_CX - RAD_R + 6, RAD_CY - RAD_R + 22, 78, 194, 78, 95);
 
-    // ═══════════════════════════════════════════════════════════════
+    
     // EVENT LOG (bottom strip, full width)
-    // ═══════════════════════════════════════════════════════════════
+    
     setColor(r, 5, 14, 5);
     SDL_Rect logRect = { 0, LOG_Y, WIN_W, WIN_H - LOG_Y };
     SDL_RenderFillRect(r, &logRect);
@@ -785,9 +777,9 @@ static void render(SDL_Renderer* r, TTF_Font* fNorm, TTF_Font* fSmall) {
     SDL_RenderPresent(r);
 }
 
-// =============================================================================
+
 // MAIN
-// =============================================================================
+
 
 int main(int /*argc*/, char* /*argv*/[]) {
     g_rng.seed((unsigned)time(nullptr));
@@ -819,7 +811,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
         return 1;
     }
 
-    // ── Font discovery ───────────────────────────────────────────
+    //  Font discovery 
     static const char* FONT_PATHS[] = {
         // Linux
         "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
@@ -855,7 +847,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
         return 1;
     }
 
-    // ── Initial log messages ─────────────────────────────────────
+    //  Initial log messages 
     addLog("[SYSTEM] Air Defense TACOPS online");
     addLog("[SYSTEM] Radar sweep active — SPACE to spawn threat");
 
@@ -863,7 +855,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
     bool   running  = true;
 
     while (running) {
-        // ── Events ───────────────────────────────────────────────
+        //  Events 
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
             switch (ev.type) {
@@ -903,13 +895,13 @@ int main(int /*argc*/, char* /*argv*/[]) {
             }
         }
 
-        // ── Update ───────────────────────────────────────────────
+        //  Update 
         Uint32 now = SDL_GetTicks();
         float  dt  = std::min((now - lastTick) / 1000.f, 0.05f);
         lastTick   = now;
         update(dt);
 
-        // ── Render ───────────────────────────────────────────────
+        //  Render 
         render(ren, fNorm, fSmall);
     }
 
